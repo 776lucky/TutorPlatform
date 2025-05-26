@@ -1,3 +1,4 @@
+# schemas.py
 from pydantic import BaseModel, EmailStr
 from datetime import datetime
 from typing import Optional
@@ -17,6 +18,32 @@ class ProfileBase(BaseModel):
     availability: Optional[str] = None
     accepts_short_notice: Optional[bool] = None
 
+# ✅ 创建 ProfileUpdate：全部字段都设置为可选
+class ProfileUpdate(BaseModel):
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
+    phone_number: Optional[str] = None
+    address: Optional[str] = None
+    education_level: Optional[str] = None
+    major: Optional[str] = None
+    certifications: Optional[str] = None
+    working_with_children_check: Optional[str] = None
+    subjects: Optional[str] = None
+    has_experience: Optional[bool] = None
+    experience_details: Optional[str] = None
+    availability: Optional[str] = None
+    accepts_short_notice: Optional[bool] = None
+
+class ProfileCreate(ProfileBase):
+    pass
+
+class ProfileOut(ProfileCreate):
+    id: int
+    user_id: int
+
+    class Config:
+        from_attributes = True
+
 class UserCreate(ProfileBase):
     email: EmailStr
     password: str
@@ -29,18 +56,8 @@ class UserOut(BaseModel):
     created_at: datetime
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 class UserLogin(BaseModel):
     email: EmailStr
     password: str
-
-class ProfileCreate(ProfileBase):
-    pass
-
-class ProfileOut(ProfileCreate):
-    id: int
-    user_id: int
-
-    class Config:
-        orm_mode = True

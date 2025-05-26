@@ -13,13 +13,17 @@ def get_profile(user_id: int, db: Session = Depends(get_db)):
     return profile
 
 @router.put("/{user_id}", response_model=schemas.ProfileOut)
-def update_profile(user_id: int, updated: schemas.ProfileCreate, db: Session = Depends(get_db)):
+def update_profile(user_id: int, updated: schemas.ProfileUpdate, db: Session = Depends(get_db)):
     profile = db.query(models.Profile).filter(models.Profile.user_id == user_id).first()
     if not profile:
         raise HTTPException(status_code=404, detail="Profile not found")
 
-    for field, value in updated.dict().items():
+    for field, value in updated.dict(exclude_unset=True).items():
         setattr(profile, field, value)
+
     db.commit()
     db.refresh(profile)
     return profile
+
+
+
