@@ -33,9 +33,8 @@ GET /tutors/search?north=...&south=...&east=...&west=...&subject=...
 
 需添加以下字段：
 
-sql
-ALTER TABLE profile ADD COLUMN latitude FLOAT NOT NULL DEFAULT 0;
-ALTER TABLE profile ADD COLUMN longitude FLOAT NOT NULL DEFAULT 0;
+- ALTER TABLE profile ADD COLUMN latitude FLOAT NOT NULL DEFAULT 0;
+- ALTER TABLE profile ADD COLUMN longitude FLOAT NOT NULL DEFAULT 0;
 
 
 ## 使用流程
