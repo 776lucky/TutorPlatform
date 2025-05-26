@@ -36,3 +36,11 @@ GET /tutors/search?north=...&south=...&east=...&west=...&subject=...
 sql
 ALTER TABLE profile ADD COLUMN latitude FLOAT NOT NULL DEFAULT 0;
 ALTER TABLE profile ADD COLUMN longitude FLOAT NOT NULL DEFAULT 0;
+
+
+## 使用流程
+
+- 用户进入“搜索家教”页面
+- 拖动或缩放地图
+- 系统发起请求筛选当前视图内的 tutor
+- 返回结果用于渲染地图上的 marker 和列表卡片
