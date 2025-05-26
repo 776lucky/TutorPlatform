@@ -15,6 +15,8 @@
 
 ## 实现要点
 
+地图拖动 → 获取新 bounds → 发请求给后端 /tutors/search → 数据库查找 → 返回新数据
+
 ### 地图交互
 
 - 使用 `react-leaflet` 渲染地图
