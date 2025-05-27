@@ -59,7 +59,7 @@ const AboutUsPage = () => {
       >
         <div className="absolute inset-0 hero-gradient opacity-60 z-0"></div>
         <div className="absolute inset-0 bg-grid-pattern opacity-10 z-0"></div>
-        <style jsx>{`
+        <style>{`
           .bg-grid-pattern {
             background-image: linear-gradient(hsl(var(--primary)) 0.5px, transparent 0.5px), linear-gradient(to right, hsl(var(--primary)) 0.5px, hsl(var(--background)) 0.5px);
             background-size: 15px 15px;

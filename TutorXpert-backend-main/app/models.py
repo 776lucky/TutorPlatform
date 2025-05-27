@@ -24,7 +24,6 @@ class Profile(Base):
     first_name = Column(String(100), nullable=False)
     last_name = Column(String(100), nullable=False)
     phone_number = Column(String(20), nullable=True)
-
     address = Column(Text, nullable=True)
     education_level = Column(String(50), nullable=True)
     major = Column(Text, nullable=True)
@@ -36,7 +35,17 @@ class Profile(Base):
     availability = Column(Text, nullable=True)
     accepts_short_notice = Column(Boolean, nullable=True)
 
+    lat = Column(Float, nullable=False, default=0.0)
+    lng = Column(Float, nullable=False, default=0.0)
+
+    # ✅ 你漏掉的字段：
+    hourly_rate = Column(Float, nullable=True)
+    rating = Column(Float, nullable=True)
+    title = Column(String(100), nullable=True)
+    bio = Column(Text, nullable=True)
+
     user = relationship("User", back_populates="profile")
+
 
 class Task(Base):
     __tablename__ = "tasks"
@@ -46,12 +55,11 @@ class Task(Base):
     description = Column(Text, nullable=True)
 
     # 地理位置：用于地图筛选
-    latitude = Column(Float, nullable=False)
-    longitude = Column(Float, nullable=False)
+    lat = Column(Float, nullable=False)
+    lng = Column(Float, nullable=False)
 
     # 发布者
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
-    user = relationship("User")  # 可选 back_populates="tasks"
 
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     user = relationship("User", back_populates="tasks")

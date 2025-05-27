@@ -11,6 +11,15 @@ import { Link } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
 import mockTutors from "@/data/mockTutors";
 import MapView from "@/components/MapView";
+import axios from "axios";
+
+
+const parseSubjects = (subjects) => {
+  if (Array.isArray(subjects)) return subjects;
+  if (typeof subjects === "string") return subjects.split(',').map(s => s.trim());
+  return []; // fallback
+};
+
 
 const getDistanceKm = (lat1, lon1, lat2, lon2) => {
   const R = 6371;
@@ -38,27 +47,53 @@ const TutorsPage = () => {
 
   const cardRefs = useRef({});
 
+  // ✅ 第一次加载触发地图范围请求
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setTutors(mockTutors);
-      setFilteredTutors(mockTutors);
-      setIsLoading(false);
-    }, 1000);
-    return () => clearTimeout(timer);
+    console.log("📍 首次加载 TutorsPage，触发初始地图范围查询");
+    fetchTutorsByBounds({
+      north: -33.7,
+      south: -34.0,
+      east: 151.3,
+      west: 151.1,
+    });
   }, []);
 
+  
+  // ✅ 获取用户地理位置（可选）
   useEffect(() => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
-        pos => setUserPosition([pos.coords.latitude, pos.coords.longitude]),
+        pos => {
+          const { latitude, longitude } = pos.coords;
+          setUserPosition([latitude, longitude]);
+        },
         err => console.warn("Location access denied:", err.message)
       );
     }
   }, []);
+  
+  // ✅ 获取 tutor 数据并设置状态
+  const fetchTutorsByBounds = async (bounds) => {
+    try {
+      const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/tutors/search`, {
+        params: bounds,
+      });
+      console.log("📨 Tutor response:", res.data);
 
-  useEffect(() => {
-    filterTutors();
-  }, [searchTerm, subjectFilter, ratingFilter, distanceFilter, tutors, userPosition]);
+      setTutors(res.data);
+      setFilteredTutors(res.data);  // 默认显示全部
+      setIsLoading(false);
+    } catch (err) {
+      console.error("❌ Tutor fetch error:", err);
+      toast({
+        title: "Failed to load tutors",
+        description: "Please check your connection or try again.",
+        variant: "destructive",
+      });
+      setIsLoading(false);
+    }
+  };
+
 
   const filterTutors = () => {
     let tempFiltered = [...tutors];
@@ -180,59 +215,94 @@ const TutorsPage = () => {
 
         <div className="flex flex-col md:flex-row gap-6 h-[700px]">
           <motion.div variants={staggerContainer} className="w-full md:w-[400px] overflow-y-auto space-y-6 pr-2">
-            {filteredTutors.map((tutor) => (
-              <motion.div key={tutor.id} variants={fadeIn} ref={el => cardRefs.current[tutor.id] = el}>
-                <Card className="h-full flex flex-col card-hover glass-effect">
-                  <CardHeader className="pb-2">
-                    <div className="flex items-start justify-between">
-                      <div className="flex items-center mb-3">
-                        <div className="mr-4 relative">
-                          <img alt={`Tutor ${tutor.name}`} className="w-20 h-20 rounded-full object-cover border-2 border-primary tech-glow" src="https://images.unsplash.com/photo-1701229404076-5629809b331d" />
-                          <span className="absolute bottom-0 right-0 block h-4 w-4 rounded-full bg-green-500 border-2 border-card ring-1 ring-green-400"></span>
+            {filteredTutors.map((tutor, i) => {
+              // const name = `${tutor.firstName} ${tutor.lastName}`;
+              // ✅ 调试输出
+              console.log(`Rendering Tutor[${i}]`, {
+                id: tutor.id,
+                name: tutor.name,
+                title: tutor.title,
+                subjects: tutor.subjects,
+                hourlyRate: tutor.hourlyRate ?? tutor.hourly_rate,
+                experience: tutor.experience,
+                rating: tutor.rating,
+                bio: tutor.bio,
+              });
+
+              // ✅ 兼容后端字段风格
+              const subjects = Array.isArray(tutor.subjects)
+                ? tutor.subjects
+                : typeof tutor.subjects === "string"
+                ? tutor.subjects.split(",").map((s) => s.trim())
+                : [];
+
+              const hourlyRate = tutor.hourlyRate ?? tutor.hourly_rate;
+
+              return (
+                <motion.div key={tutor.id} variants={fadeIn} ref={el => cardRefs.current[tutor.id] = el}>
+                  <Card className="h-full flex flex-col card-hover glass-effect">
+                    <CardHeader className="pb-2">
+                      <div className="flex items-start justify-between">
+                        <div className="flex items-center mb-3">
+                          <div className="mr-4 relative">
+                            <img
+                              alt={`Tutor ${tutor.name}`}
+                              className="w-20 h-20 rounded-full object-cover border-2 border-primary tech-glow"
+                              src="https://images.unsplash.com/photo-1701229404076-5629809b331d"
+                            />
+                            <span className="absolute bottom-0 right-0 block h-4 w-4 rounded-full bg-green-500 border-2 border-card ring-1 ring-green-400"></span>
+                          </div>
+                          <div>
+                            <CardTitle className="text-xl text-primary">{tutor.name}</CardTitle>
+                            <p className="text-sm text-muted-foreground">{tutor.title}</p>
+                          </div>
                         </div>
-                        <div>
-                          <CardTitle className="text-xl text-primary">{tutor.name}</CardTitle>
-                          <p className="text-sm text-muted-foreground">{tutor.title}</p>
+                        <div className="flex items-center bg-primary/10 px-2 py-1 rounded-full">
+                          <Star className="h-4 w-4 text-yellow-400 mr-1" />
+                          <span className="text-sm font-medium text-yellow-400">{tutor.rating}</span>
                         </div>
                       </div>
-                      <div className="flex items-center bg-primary/10 px-2 py-1 rounded-full">
-                        <Star className="h-4 w-4 text-yellow-400 mr-1" />
-                        <span className="text-sm font-medium text-yellow-400">{tutor.rating}</span>
+
+                      <div className="flex flex-wrap gap-2 mb-2">
+                        {subjects.slice(0, 3).map((s, i) => (
+                          <Badge key={i} variant="secondary">{s}</Badge>
+                        ))}
+                        {subjects.length > 3 && (
+                          <Badge variant="outline">+{subjects.length - 3} more</Badge>
+                        )}
                       </div>
-                    </div>
-                    <div className="flex flex-wrap gap-2 mb-2">
-                      {tutor.subjects.slice(0, 3).map((s, i) => <Badge key={i} variant="secondary">{s}</Badge>)}
-                      {tutor.subjects.length > 3 && <Badge variant="outline">+{tutor.subjects.length - 3} more</Badge>}
-                    </div>
-                  </CardHeader>
-                  <CardContent className="py-2 flex-grow">
-                    <p className="text-muted-foreground text-sm mb-4 line-clamp-3">{tutor.bio}</p>
-                    <div className="grid grid-cols-2 gap-3 text-sm">
-                      <div className="flex items-center text-muted-foreground">
-                        <Clock className="h-4 w-4 text-primary/70 mr-2" />
-                        <span>${tutor.hourlyRate}/hour</span>
+                    </CardHeader>
+
+                    <CardContent className="py-2 flex-grow">
+                      <p className="text-muted-foreground text-sm mb-4 line-clamp-3">{tutor.bio}</p>
+                      <div className="grid grid-cols-2 gap-3 text-sm">
+                        <div className="flex items-center text-muted-foreground">
+                          <Clock className="h-4 w-4 text-primary/70 mr-2" />
+                          <span>${hourlyRate}/hour</span>
+                        </div>
+                        <div className="flex items-center text-muted-foreground">
+                          <Award className="h-4 w-4 text-primary/70 mr-2" />
+                          <span>{tutor.experience}</span>
+                        </div>
                       </div>
-                      <div className="flex items-center text-muted-foreground">
-                        <Award className="h-4 w-4 text-primary/70 mr-2" />
-                        <span>{tutor.experience}</span>
-                      </div>
-                    </div>
-                  </CardContent>
-                  <CardFooter className="pt-4 flex gap-3">
-                    <Button variant="outline" className="flex-1" asChild>
-                      <Link to={`/tutors/${tutor.id}`}>View Full Profile</Link>
-                    </Button>
-                    <Button className="flex-1" onClick={() => handleContactTutor(tutor.name)}>
-                      Connect <Zap className="ml-2 h-4 w-4" />
-                    </Button>
-                  </CardFooter>
-                </Card>
-              </motion.div>
-            ))}
+                    </CardContent>
+
+                    <CardFooter className="pt-4 flex gap-3">
+                      <Button variant="outline" className="flex-1" asChild>
+                        <Link to={`/tutors/${tutor.id}`}>View Full Profile</Link>
+                      </Button>
+                      <Button className="flex-1" onClick={() => handleContactTutor(tutor.name)}>
+                        Connect <Zap className="ml-2 h-4 w-4" />
+                      </Button>
+                    </CardFooter>
+                  </Card>
+                </motion.div>
+              );
+            })}
           </motion.div>
 
           <div className="relative flex-1 rounded-xl overflow-hidden shadow-2xl">
-            <MapView tutors={filteredTutors} onTutorClick={handleMapClick} />
+            <MapView tutors={filteredTutors} onTutorClick={handleMapClick} onBoundsChange={fetchTutorsByBounds} />
           </div>
         </div>
       </div>

@@ -42,7 +42,7 @@ const HomePage = () => {
       <section className="relative overflow-hidden py-24 md:py-40">
         <div className="absolute inset-0 hero-gradient opacity-50 z-0"></div>
         <div className="absolute inset-0 bg-grid-pattern opacity-10 z-0"></div>
-        <style jsx>{`
+        <style>{`
           .bg-grid-pattern {
             background-image: linear-gradient(hsl(var(--primary)) 1px, transparent 1px), linear-gradient(to right, hsl(var(--primary)) 1px, hsl(var(--background)) 1px);
             background-size: 20px 20px;

@@ -34,8 +34,8 @@ const TaskMapView = ({ tasks, onTaskClick }) => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (pos) => {
-          const { latitude, longitude } = pos.coords;
-          setUserPosition([latitude, longitude]);
+          const { latitude: lat, longitude: lng } = pos.coords;
+          setUserPosition([lat, lng]);          
         },
         (err) => {
           console.warn("用户位置获取失败：", err.message);

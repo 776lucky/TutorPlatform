@@ -2,6 +2,11 @@
 from pydantic import BaseModel, EmailStr
 from datetime import datetime
 from typing import Optional
+from pydantic import BaseModel, Field
+
+def to_camel(string: str) -> str:
+    parts = string.split('_')
+    return parts[0] + ''.join(word.capitalize() for word in parts[1:])
 
 class ProfileBase(BaseModel):
     first_name: str
@@ -61,3 +66,29 @@ class UserOut(BaseModel):
 class UserLogin(BaseModel):
     email: EmailStr
     password: str
+
+
+class TutorOut(BaseModel):
+    id: int
+    first_name: str = Field(..., alias="firstName")
+    last_name: str = Field(..., alias="lastName")
+    title: Optional[str] = None
+    bio: Optional[str] = None
+    experience: Optional[str] = None
+    hourly_rate: Optional[float] = Field(None, alias="hourlyRate")
+    rating: Optional[float] = None
+    subjects: Optional[str] = None
+    address: Optional[str] = None
+    lat: Optional[float] = None
+    lng: Optional[float] = None
+    name: Optional[str] = Field(None, alias="name")  # ✅ 可选字段，避免初始报错
+
+    class Config:
+        from_attributes = True
+        populate_by_name = True
+
+    @classmethod
+    def model_validate(cls, obj):
+        base = super().model_validate(obj)
+        base.name = f"{base.first_name} {base.last_name}"  # ✅ 安全拼接
+        return base
