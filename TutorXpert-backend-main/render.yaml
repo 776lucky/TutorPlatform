@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: tutor-backend
+    env: python
+    buildCommand: ""
+    startCommand: uvicorn main:app --host 0.0.0.0 --port 8000
+    plan: free
+    envVars:
+      - key: DATABASE_URL
+        value: sqlite:///./your.db  # 或其他实际数据库地址
