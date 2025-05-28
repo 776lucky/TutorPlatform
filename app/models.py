@@ -11,7 +11,6 @@ class User(Base):
     hashed_password = Column(String, nullable=False)
     role = Column(String, nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
-
     profile = relationship("Profile", back_populates="user", uselist=False)
     tasks = relationship("Task", back_populates="user")
 
@@ -20,7 +19,6 @@ class Profile(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"), unique=True, nullable=False)
-
     first_name = Column(String(100), nullable=False)
     last_name = Column(String(100), nullable=False)
     phone_number = Column(String(20), nullable=True)
@@ -34,16 +32,12 @@ class Profile(Base):
     experience_details = Column(Text, nullable=True)
     availability = Column(Text, nullable=True)
     accepts_short_notice = Column(Boolean, nullable=True)
-
     lat = Column(Float, nullable=False, default=0.0)
     lng = Column(Float, nullable=False, default=0.0)
-
-    # ✅ 你漏掉的字段：
     hourly_rate = Column(Float, nullable=True)
     rating = Column(Float, nullable=True)
     title = Column(String(100), nullable=True)
     bio = Column(Text, nullable=True)
-
     user = relationship("User", back_populates="profile")
 
 
