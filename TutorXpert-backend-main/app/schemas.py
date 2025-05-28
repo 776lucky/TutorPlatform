@@ -67,6 +67,25 @@ class UserLogin(BaseModel):
     email: EmailStr
     password: str
 
+class TaskOut(BaseModel):
+    id: int
+    title: str
+    subject: Optional[str] = None
+    address: Optional[str] = None
+    lat: float
+    lng: float
+    description: Optional[str] = None
+    budget: Optional[str] = None
+    deadline: Optional[str] = None
+    posted_by: Optional[str] = None
+    posted_date: Optional[str] = None
+    status: Optional[str] = None
+
+    class Config:
+        from_attributes = True
+        populate_by_name = True
+
+
 
 class TutorOut(BaseModel):
     id: int

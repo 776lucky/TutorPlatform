@@ -11,6 +11,8 @@ import { Link } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
 import mockTasks from "@/data/mockTasks";
 import TaskMapView from "@/components/TaskMapView";
+import axios from "axios";
+
 
 const getDistanceFromLatLng = (lat1, lng1, lat2, lng2) => {
   const toRad = x => (x * Math.PI) / 180;
@@ -24,7 +26,22 @@ const getDistanceFromLatLng = (lat1, lng1, lat2, lng2) => {
   return R * c;
 };
 
+
+
+
+
 const TasksPage = () => {
+  const fetchTasksByBounds = async (bounds) => {
+    try {
+      const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/tasks/search`, {
+        params: bounds,
+      });
+      setTasks(res.data);
+      setFilteredTasks(res.data);
+    } catch (err) {
+      console.error("❌ Map filter task fetch error", err);
+    }
+  };
   const { toast } = useToast();
   const [tasks, setTasks] = useState([]);
   const [filteredTasks, setFilteredTasks] = useState([]);
@@ -246,7 +263,12 @@ const TasksPage = () => {
           </motion.div>
 
           <div className="relative flex-1 rounded-xl overflow-hidden shadow-2xl">
-            <TaskMapView tasks={filteredTasks} onTaskClick={scrollToCard} userPosition={userPosition} />
+            <TaskMapView
+              tasks={filteredTasks}
+              onTaskClick={scrollToCard}
+              userPosition={userPosition}
+              onBoundsChange={fetchTasksByBounds}
+            />
           </div>
         </div>
       </div>

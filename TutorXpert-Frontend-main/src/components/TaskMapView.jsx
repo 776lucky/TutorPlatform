@@ -1,5 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
+import {
+  MapContainer,
+  TileLayer,
+  Marker,
+  Popup,
+  useMap,
+  useMapEvents,
+} from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
@@ -27,15 +34,38 @@ const FlyToUser = ({ position }) => {
   return null;
 };
 
-const TaskMapView = ({ tasks, onTaskClick }) => {
+// ✅ 地图监听边界变化（map filter）
+const MapEvents = ({ onBoundsChange }) => {
+  useMapEvents({
+    moveend: (e) => {
+      const map = e.target;
+      const bounds = map.getBounds();
+      const ne = bounds.getNorthEast();
+      const sw = bounds.getSouthWest();
+      if (onBoundsChange) {
+        onBoundsChange({
+          north: ne.lat,
+          south: sw.lat,
+          east: ne.lng,
+          west: sw.lng,
+        });
+      }
+    },
+  });
+  return null;
+};
+
+const TaskMapView = ({ tasks = [], onTaskClick, onBoundsChange }) => {
   const [userPosition, setUserPosition] = useState(null);
+  const defaultCenter = [-25.2744, 133.7751]; // Australia center
+  const defaultZoom = 4.2;
 
   useEffect(() => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (pos) => {
           const { latitude: lat, longitude: lng } = pos.coords;
-          setUserPosition([lat, lng]);          
+          setUserPosition([lat, lng]);
         },
         (err) => {
           console.warn("用户位置获取失败：", err.message);
@@ -43,9 +73,6 @@ const TaskMapView = ({ tasks, onTaskClick }) => {
       );
     }
   }, []);
-
-  const defaultCenter = [-25.2744, 133.7751];
-  const defaultZoom = 4.2;
 
   return (
     <MapContainer
@@ -60,7 +87,6 @@ const TaskMapView = ({ tasks, onTaskClick }) => {
       />
 
       {userPosition && <FlyToUser position={userPosition} />}
-
       {userPosition && (
         <Marker position={userPosition}>
           <Popup>You're here</Popup>
@@ -80,6 +106,9 @@ const TaskMapView = ({ tasks, onTaskClick }) => {
           </Popup>
         </Marker>
       ))}
+
+      {/* ✅ 监听边界变化（触发 map filter） */}
+      <MapEvents onBoundsChange={onBoundsChange} />
     </MapContainer>
   );
 };

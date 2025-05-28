@@ -51,16 +51,17 @@ class Task(Base):
     __tablename__ = "tasks"
 
     id = Column(Integer, primary_key=True, index=True)
-    title = Column(String(200), nullable=False)
-    description = Column(Text, nullable=True)
+    title = Column(String)
+    subject = Column(String)
+    description = Column(String)
+    address = Column(String)
+    lat = Column(Float)
+    lng = Column(Float)
+    budget = Column(String)
+    deadline = Column(String)
+    status = Column(String)
+    posted_by = Column(String)
+    user_id = Column(Integer, ForeignKey("users.id"))  # ✅ 添加这一行
+    user = relationship("User", back_populates="tasks")  # ✅ 添加这一行
 
-    # 地理位置：用于地图筛选
-    lat = Column(Float, nullable=False)
-    lng = Column(Float, nullable=False)
-
-    # 发布者
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
-
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
-    user = relationship("User", back_populates="tasks")
 
