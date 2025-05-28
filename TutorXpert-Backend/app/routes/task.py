@@ -5,7 +5,7 @@ from app import models, schemas
 from app.database import get_db
 
 router = APIRouter()
-
+print("✅ task.py loaded")
 @router.get("/tasks/search", response_model=List[schemas.TaskOut])
 def search_tasks_by_bounds(
     north: float = Query(...),
