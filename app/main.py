@@ -31,4 +31,8 @@ app.include_router(task.router)
 
 @app.get("/")
 def root():
-    return {"message": "GlowUpTutors backend is running."}
+    from app.database import engine
+    return {
+        "message": "GlowUpTutors backend is running.",
+        "db_url": str(engine.url)
+    }
