@@ -12,6 +12,8 @@ import { useToast } from "@/components/ui/use-toast";
 import mockTasks from "@/data/mockTasks";
 import TaskMapView from "@/components/TaskMapView";
 import axios from "axios";
+import { useNavigate } from 'react-router-dom';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 
 
 const getDistanceFromLatLng = (lat1, lng1, lat2, lng2) => {
@@ -31,6 +33,9 @@ const getDistanceFromLatLng = (lat1, lng1, lat2, lng2) => {
 
 
 const TasksPage = () => {
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [selectedTutor, setSelectedTutor] = useState(null);
+  
   const fetchTasksByBounds = async (bounds) => {
     try {
       const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/tasks/search`, {
@@ -111,6 +116,21 @@ const TasksPage = () => {
       });
     }
     setFilteredTasks(tempFiltered);
+  };
+
+  const handleViewTutorDetails = async (tutorId) => {
+    try {
+      const res = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/tutors/${tutorId}`);
+      setSelectedTutor(res.data);
+      setIsDialogOpen(true);
+    } catch (err) {
+      console.error("Failed to fetch tutor info", err);
+      toast({
+        title: "Error",
+        description: "Failed to load tutor profile.",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleSearch = e => setSearchTerm(e.target.value);
@@ -242,8 +262,12 @@ const TasksPage = () => {
                     </div>
                   </CardContent>
                   <CardFooter className="pt-4 flex gap-3">
-                    <Button variant="outline" className="flex-1" asChild>
-                      <Link to={`/projects/${task.id}`}>View Details</Link>
+                    <Button
+                      variant="outline"
+                      className="flex-1"
+                      onClick={() => handleViewTutorDetails(task.postedBy)}  // 假设 postedBy 是 tutorId
+                    >
+                      View Details
                     </Button>
                     <Button
                       className="flex-1"
@@ -272,6 +296,32 @@ const TasksPage = () => {
           </div>
         </div>
       </div>
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent className="max-w-md bg-background border border-blue-500 text-foreground">
+          {selectedTutor ? (
+            <>
+              <DialogHeader>
+                <DialogTitle className="text-primary text-2xl">
+                  {selectedTutor.first_name} {selectedTutor.last_name}
+                </DialogTitle>
+              </DialogHeader>
+              <div className="py-2 space-y-2">
+                <p><strong>Subjects:</strong> {selectedTutor.subjects}</p>
+                <p><strong>Experience:</strong> {selectedTutor.experience_details}</p>
+                <p><strong>Availability:</strong> {selectedTutor.availability}</p>
+                <p><strong>Address:</strong> {selectedTutor.address}</p>
+              </div>
+              <DialogFooter className="pt-4">
+                <Button onClick={() => alert("预约成功（模拟）")}>
+                  Book a Session
+                </Button>
+              </DialogFooter>
+            </>
+          ) : (
+            <p>Loading tutor profile...</p>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
